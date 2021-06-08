@@ -1,0 +1,51 @@
+<html>
+  <head>
+    <title>MsgHub</title>
+  </head>
+
+  <style>
+    #chat {
+      text-align: left;
+      background: #f1f1f1;
+      width: 500px;
+      min-height: 300px;
+      padding: 20px;
+    }
+  </style>
+
+  <body>
+    <center>
+      <h3>Message Hub</h3>
+      <pre id="chat"></pre>
+      <input placeholder="ping" id="text" type="text" value="ping">
+    </center>
+
+    <script>
+      // 初始化连接
+      var url = "ws://" + window.location.host + "/ws";
+      var ws = new WebSocket(url);
+
+      var chat = document.getElementById("chat");
+      var text = document.getElementById("text");
+
+      // 接收消息
+      ws.onmessage = function (msg) {
+        chat.innerText += msg.data + "\n";
+      };
+
+      // 发送消息
+      text.onkeydown = function (e) {
+        if (e.keyCode === 13 && text.value !== "") {
+          ws.send(text.value);
+          text.value = "";
+        }
+      };
+
+      // 心跳时拉取消息[每分钟]
+      intervalId = setInterval(function () {
+          ws.send("ping");
+      }, 60000);
+
+    </script>
+  </body>
+</html>
