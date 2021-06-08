@@ -1,7 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
+
+	"go-im/pkg/mg"
 
 	"github.com/gin-gonic/gin"
 	"gopkg.in/olahol/melody.v1"
@@ -28,7 +31,9 @@ func main() {
 	})
 
 	m.HandleMessage(func(s *melody.Session, msg []byte) {
+		fmt.Println(string(msg))
 		audience := []*melody.Session{s}
+		mg.Receive("123456", []string{})
 		m.BroadcastMultiple(msg, audience)
 	})
 
