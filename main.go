@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"go-im/pkg/mg"
+	"go-im/pkg/mq"
 
 	"github.com/gin-gonic/gin"
 	"gopkg.in/olahol/melody.v1"
@@ -33,8 +33,16 @@ func main() {
 	m.HandleMessage(func(s *melody.Session, msg []byte) {
 		fmt.Println(string(msg))
 		audience := []*melody.Session{s}
-		mg.Receive("123456", []string{})
-		m.BroadcastMultiple(msg, audience)
+		messages := mq.Receive("123456", []string{})
+		if len(messages) != 0 {
+			for index := range messages {
+				m.BroadcastMultiple([]byte(messages[index]), audience)
+			}
+		} else if string(msg) == "ping" {
+			m.BroadcastMultiple([]byte("pong"), audience)
+		} else {
+			m.BroadcastMultiple(msg, audience)
+		}
 	})
 
 	r.Run(":5000")
