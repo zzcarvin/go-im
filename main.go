@@ -16,6 +16,12 @@ func main() {
 	r := gin.Default()
 	m := melody.New()
 
+	var (
+		// 用户与 session 相互映射
+		userToSession = make(map[string]*melody.Session)
+		sessionToUser = make(map[*melody.Session]string)
+	)
+
 	// H5 客户端
 	r.GET("/", func(c *gin.Context) {
 		http.ServeFile(c.Writer, c.Request, "view/index.html")
@@ -34,14 +40,17 @@ func main() {
 
 	// ws 处理连接
 	m.HandleConnect(func(s *melody.Session) {
-		// 从在线连接中注册 undo
-		fmt.Println("bind")
+		fmt.Println("online")
+		s.Write([]byte("ping"))
 	})
 
 	// ws 处理断开
 	m.HandleDisconnect(func(s *melody.Session) {
-		// 从在线连接中清除 undo
-		fmt.Println("unbind")
+		// 清除绑定关系
+		fmt.Println("offline")
+		account := sessionToUser[s]
+		delete(userToSession, account)
+		delete(sessionToUser, s)
 	})
 
 	// ws 处理消息
@@ -57,8 +66,9 @@ func main() {
 				m.BroadcastMultiple([]byte(messages[index]), audience)
 			}
 		} else if message == "pong" {
-			// 更新连接活跃度 undo
-			fmt.Println("refresh")
+			// 更新绑定关系
+			userToSession[account] = s
+			sessionToUser[s] = account
 		}
 	})
 
