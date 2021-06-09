@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"go-im/pkg/mq"
 
@@ -23,25 +24,28 @@ func main() {
 	})
 
 	m.HandleConnect(func(s *melody.Session) {
-		s.Write([]byte("hi"))
+		// 从在线连接中注册 undo
+		fmt.Println("bind")
 	})
 
 	m.HandleDisconnect(func(s *melody.Session) {
-		s.Write([]byte("bye"))
+		// 从在线连接中清除 undo
+		fmt.Println("unbind")
 	})
 
 	m.HandleMessage(func(s *melody.Session, msg []byte) {
-		fmt.Println(string(msg))
-		audience := []*melody.Session{s}
-		messages := mq.Receive("123456", []string{})
-		if len(messages) != 0 {
+		raw := strings.Split(string(msg), ":")
+		account := raw[0]
+		message := raw[1]
+		if message == "ping" {
+			audience := []*melody.Session{s}
+			messages := mq.Receive(account, []string{})
 			for index := range messages {
 				m.BroadcastMultiple([]byte(messages[index]), audience)
 			}
-		} else if string(msg) == "ping" {
-			m.BroadcastMultiple([]byte("pong"), audience)
-		} else {
-			m.BroadcastMultiple(msg, audience)
+		} else if message == "pong" {
+			// 更新连接活跃度 undo
+			fmt.Println("refresh")
 		}
 	})
 

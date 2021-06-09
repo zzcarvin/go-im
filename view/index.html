@@ -4,7 +4,7 @@
   </head>
 
   <style>
-    #chat {
+    #messages {
       text-align: left;
       background: #f1f1f1;
       width: 500px;
@@ -16,36 +16,59 @@
   <body>
     <center>
       <h3>Message Hub</h3>
-      <pre id="chat"></pre>
-      <input placeholder="ping" id="text" type="text" value="ping">
+      <pre id="messages"></pre>
+      <input placeholder="输入你的手机号" id="account" type="text" value="">
     </center>
 
     <script>
-      // 初始化连接
-      var url = "ws://" + window.location.host + "/ws";
-      var ws = new WebSocket(url);
-
-      var chat = document.getElementById("chat");
-      var text = document.getElementById("text");
-
-      // 接收消息
-      ws.onmessage = function (msg) {
-        chat.innerText += msg.data + "\n";
-      };
-
-      // 发送消息
-      text.onkeydown = function (e) {
-        if (e.keyCode === 13 && text.value !== "") {
-          ws.send(text.value);
-          text.value = "";
+      // 注册用户
+      var account = document.getElementById("account");
+      account.onkeydown = function (e) {
+        if (e.keyCode === 13 && account.value !== "" && account.value.length == 11) {
+            alert("start receive massage")
+            account.setAttribute("disabled", "disabled")
+            getConnect(account.value)
         }
       };
+      
+      function getConnect(account){
+        // 初始化连接
+        var url = "ws://" + window.location.host + "/ws";
+        var ws = new WebSocket(url);
+        var messages = document.getElementById("messages");
 
-      // 心跳时拉取消息[每分钟]
-      intervalId = setInterval(function () {
-          ws.send("ping");
-      }, 60000);
+        // 注册登录
+        ws.onopen = function (msg) {
+          ws.send(account + ":ping");
+        };
 
+        // 接收消息
+        ws.onmessage = function (msg) {
+          if (msg.data == "ping") {
+            // 相应服务端的心跳检测
+            ws.send(account + ":pong");
+          } else {
+            messages.innerText += msg.data + "\n";
+          }
+        };
+
+        // 心跳时拉取消息[每分钟]
+        intervalId = setInterval(function () {
+          ws.send(account + ":ping");
+        }, 60000);
+
+        // 服务端连接失败
+        ws.onerror = function (msg) {
+          // 休眠重试 undo
+          console.log("server not response")
+        };
+        
+        // 服务端关闭
+        ws.onclose = function (msg) {
+          // 休眠重试 undo
+          console.log("server shutdown")
+        };
+      }
     </script>
   </body>
 </html>

@@ -10,7 +10,7 @@ import (
 func Receive(queue string, groups []string) (res []string) {
 	defer func() {
 		if err := recover(); err != nil {
-			fmt.Printf("recover:%v\n", err)
+			fmt.Printf("receive:%v\n", err)
 			return
 		}
 	}()
@@ -100,7 +100,7 @@ func Receive(queue string, groups []string) (res []string) {
 	for {
 		// 超时
 		if time.Now().Unix() > endtime {
-			panic("time out")
+			panic("done")
 		}
 	}
 }
