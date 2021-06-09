@@ -15,13 +15,21 @@
 > 浏览 websocket 网页客户端
 
 * 127.0.0.1:5000
+* 输入手机号 (12345678901) 回车开始接受消息
 
-> 登录 rabbitmq 管理界面向 123456 队列 publish 消息
+> 推送个人
 
-* 127.0.0.1:15672
-* rabbitmq : rabbitmq
+* 127.0.0.1:5000/push/user
+* msg : 锄禾日当午
+* user : 12345678901
 
-### Undo
+> 推送群组
+
+* 127.0.0.1:5000/push/group
+* msg : 汗滴禾下土
+* group : default_group
+
+### Refine
 
 * mongodb 做消息持久化
 * redis 实现定时消息
