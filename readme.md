@@ -19,13 +19,13 @@
 
 > 推送个人
 
-* 127.0.0.1:5000/push/user
+* POST 127.0.0.1:5000/push/user
 * msg : 锄禾日当午
 * user : 12345678901
 
 > 推送群组
 
-* 127.0.0.1:5000/push/group
+* POST 127.0.0.1:5000/push/group
 * msg : 汗滴禾下土
 * group : default_group
 
